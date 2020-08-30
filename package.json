@@ -15,7 +15,6 @@
   ],
   "scripts": {
     "test": "jest --runInBand",
-    "prepare": "echo 'Executing prepare script' && yarn packages-install",
     "packages-install": "lerna exec -- yarn install --frozen-lockfile",
     "packages-build": "lerna run build",
     "test:watch": "yarn test --watch --collect-coverage=false",
