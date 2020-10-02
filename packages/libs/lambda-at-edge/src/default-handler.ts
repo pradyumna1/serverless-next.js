@@ -3,7 +3,7 @@ import PrerenderManifest from "./prerender-manifest.json";
 // @ts-ignore
 import Manifest from "./manifest.json";
 // @ts-ignore
-import { basePath } from "./routes-manifest.json";
+import { redirects, basePath } from "./routes-manifest.json";
 import lambdaAtEdgeCompat from "@sls-next/next-aws-cloudfront";
 import {
   CloudFrontRequest,
@@ -49,6 +49,46 @@ const isDataRequest = (uri: string): boolean => uri.startsWith("/_next/data");
 const normaliseUri = (uri: string): string => {
   if (basePath) uri = uri.slice(basePath.length);
   return uri === "" ? "/index" : uri;
+};
+
+const getRedirectionResponse = (
+  uri: string
+): null | CloudFrontResultResponse => {
+  for (const redirection of redirects) {
+    // @ts-ignore
+    if (redirection.regex && new RegExp(redirection.regex).test(uri)) {
+      // @ts-ignore
+      const location = redirection.destination;
+      // @ts-ignore
+      const statusCode = redirection.statusCode;
+      const status = statusCode.toString();
+      const refresh =
+        statusCode === 308
+          ? [
+              // Required for IE11 compatibility
+              {
+                key: "Refresh",
+                value: `0;url=${location}`
+              }
+            ]
+          : [];
+
+      return {
+        status: status,
+        statusDescription: "Permanent Redirect",
+        headers: {
+          location: [
+            {
+              key: "Location",
+              value: location
+            }
+          ],
+          refresh: refresh
+        }
+      };
+    }
+  }
+  return null;
 };
 
 const normaliseS3OriginDomain = (s3Origin: CloudFrontS3Origin): string => {
@@ -141,7 +181,6 @@ export const handler = async (
   const tHandlerEnd = now();
 
   log("handler execution time", tHandlerBegin, tHandlerEnd);
-
   return response;
 };
 
@@ -166,7 +205,11 @@ const handleOriginRequest = async ({
   const normalisedS3DomainName = normaliseS3OriginDomain(s3Origin);
   const hasFallback = hasFallbackForUri(uri, prerenderManifest);
   const { now, log } = perfLogger(manifest.logLambdaExecutionTimes);
-
+  const redirectionResponse = getRedirectionResponse(uri);
+  if (redirectionResponse != null) {
+    console.log("redirecting");
+    return redirectionResponse;
+  }
   s3Origin.domainName = normalisedS3DomainName;
 
   if (isHTMLPage || isPublicFile || hasFallback || isDataRequest(uri)) {
