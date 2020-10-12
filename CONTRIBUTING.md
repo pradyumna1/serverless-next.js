@@ -65,7 +65,7 @@ Note: If you are working with a Typescript package make sure you build it (`yarn
 
 ### Updating handler code
 
-If you are updating the handler code, please be mindful of increasing cold start times and/or handler size, especially when adding new dependencies or doing complex operations. Note that JS `require` time has the most impact on cold start times. While code size is also important, it has little effect on cold start times, because Lambda seems to cache the code pretty efficiently - and this can be mitigated by minifying the Next.js build. 
+If you are updating the handler code, please be mindful of increasing cold start times and/or handler size, especially when adding new dependencies or doing complex operations. Note that JS `require` time has the most impact on cold start times. While code size is also important, it has little effect on cold start times, because Lambda seems to cache the code pretty efficiently - and this can be mitigated by minifying the Next.js build.
 
 Note that Node.js seems to have a minimum cold start time of ~150 ms, even on an hello-world handler. So the idea is to try to optimize everything else as much as possible.
 

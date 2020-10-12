@@ -180,20 +180,24 @@ export const handler = async (
   const { now, log } = perfLogger(manifest.logLambdaExecutionTimes);
 
   const tHandlerBegin = now();
-
-  if (isOriginResponse(event)) {
-    response = await handleOriginResponse({
-      event,
-      manifest,
-      prerenderManifest
-    });
-  } else {
-    response = await handleOriginRequest({
-      event,
-      manifest,
-      prerenderManifest,
-      routesManifest
-    });
+  try {
+    if (isOriginResponse(event)) {
+      response = await handleOriginResponse({
+        event,
+        manifest,
+        prerenderManifest
+      });
+    } else {
+      response = await handleOriginRequest({
+        event,
+        manifest,
+        prerenderManifest,
+        routesManifest
+      });
+    }
+  } catch (e) {
+    log("default lambda failed", e);
+    response = e;
   }
 
   // Add custom headers to responses only.

@@ -423,10 +423,13 @@ class NextjsComponent extends Component {
         "Default Lambda@Edge for Next CloudFront distribution",
       handler: "index.handler",
       code: join(nextConfigPath, DEFAULT_LAMBDA_CODE_DIR),
-      role: {
-        service: ["lambda.amazonaws.com", "edgelambda.amazonaws.com"],
-        policy
-      },
+      role:
+        inputs.role && inputs.role.defaultArn
+          ? inputs.role
+          : {
+              service: ["lambda.amazonaws.com", "edgelambda.amazonaws.com"],
+              policy
+            },
       memory: readLambdaInputValue("memory", "defaultLambda", 512) as number,
       timeout: readLambdaInputValue("timeout", "defaultLambda", 10) as number,
       runtime: readLambdaInputValue(

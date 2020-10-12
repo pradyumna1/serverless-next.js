@@ -2,7 +2,8 @@
 id: faq
 title: Frequently Asked Questions
 sidebar_label: FAQs
----                                                                                                                                                                                                                   
+---
+
 ### My component doesn't deploy
 
 Make sure your `serverless.yml` uses the `serverless-components` format. [serverless components](https://serverless.com/blog/what-are-serverless-components-how-use/) differ from the original serverless framework, even though they are both accessible via the same CLI.
